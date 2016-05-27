@@ -4,15 +4,20 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.SeekBar;
 
 
-public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
+public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, View.OnTouchListener{
     private final static String TAG = "MainActivity";
 
     private GLSurfaceView glView;
     private SimpleRenderer renderer;
     private SeekBar rotationBarX, rotationBarY, rotationBarZ;
+    private float startx, starty;
+    private float rotatex, rotatey;
+    private float startrx, startry;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,9 +34,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         rotationBarZ.setOnSeekBarChangeListener(this);
 
         renderer = new SimpleRenderer();
-        renderer.addObj(new Cube(0.5f, 0, 0.2f, -3));
-        renderer.addObj(new Pyramid(0.5f, 0, 0, 0));
+        renderer.addObj(new Figure1(1.0f, 0, 0, 0));
         glView.setRenderer(renderer);
+        glView.setOnTouchListener(this);
     }
 
     @Override
@@ -50,10 +55,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (seekBar == rotationBarX)
+        if (seekBar == rotationBarX) {
             renderer.setRotationX(progress);
-        else if (seekBar == rotationBarY)
+            rotatex = progress;
+        }
+        else if (seekBar == rotationBarY){
             renderer.setRotationY(progress);
+            rotatey = progress;
+        }
         else if (seekBar == rotationBarZ)
             renderer.setRotationZ(progress);
     }
@@ -64,6 +73,47 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        //Log.d(TAG, "onTouch");
+        float touchingX = event.getX();
+        float touchingY = event.getY();
+        String touchingAction = "";
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_MOVE:
+                touchingAction = "MOVE";
+                rotatex = (touchingY - starty + startrx) % 360;
+                rotatey = (touchingX - startx + startry) % 360;
+                renderer.setRotationX(rotatex);
+                renderer.setRotationY(rotatey);
+                rotationBarX.setProgress((int)rotatex);
+                rotationBarY.setProgress((int)rotatey);
+                break;
+
+            case MotionEvent.ACTION_DOWN:
+                touchingAction = "DOWN";
+                startx = touchingX;
+                starty = touchingY;
+                startrx = rotatex;
+                startry = rotatey;
+                rotationBarX.setEnabled(false);
+                rotationBarY.setEnabled(false);
+                break;
+
+            case MotionEvent.ACTION_UP:
+                touchingAction = "UP";
+                rotationBarX.setEnabled(true);
+                rotationBarY.setEnabled(true);
+                break;
+            default:
+                touchingAction = "";
+                break;
+        }
+        //Log.d(TAG, touchingAction);
+        return true;
     }
 
 }

@@ -58,11 +58,11 @@ public class SimpleRenderer implements GLSurfaceView.Renderer {
         for (Obj obj : objs) {
             gl.glMatrixMode(GL10.GL_MODELVIEW);
             gl.glLoadIdentity();
-            gl.glTranslatef(obj.getX(), obj.getY(), obj.getZ());
             gl.glRotatef(rx, 1, 0, 0);
             gl.glRotatef(ry, 0, 1, 0);
             gl.glRotatef(rz, 0, 0, 1);
             gl.glScalef(1, 1, 1);
+            gl.glTranslatef(obj.getX(), obj.getY(), obj.getZ());
             obj.draw(gl);
         }
     }
